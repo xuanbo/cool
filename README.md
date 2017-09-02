@@ -19,3 +19,5 @@
 * 启动redis，作为服务发现桥
 * 启动gateway、blog（运行`Application.main`方法或者gateway、blog目录下在执行`gradle bootRun`）
 * 访问gateway：`localhost:8080/api/blog/demo/1`，gateway会将请求分发到blog服务，与直接访问blog服务相同：`localhost:9090/demo/1`
+
+如果只启动gateway，当访问gateway请求分发到blog服务时，熔断器会生效。

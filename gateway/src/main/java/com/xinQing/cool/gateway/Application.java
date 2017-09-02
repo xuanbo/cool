@@ -1,6 +1,6 @@
 package com.xinQing.cool.gateway;
 
-import com.xinQing.cool.common.verticle.StartVerticle;
+import com.xinQing.cool.common.verticle.BreakerVerticle;
 import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -19,11 +19,11 @@ import javax.annotation.PostConstruct;
 public class Application {
 
     @Autowired
-    private StartVerticle startVerticle;
+    private BreakerVerticle breakerVerticle;
 
     @PostConstruct
     public void start() {
-        Vertx.vertx().deployVerticle(startVerticle);
+        Vertx.vertx().deployVerticle(breakerVerticle);
     }
 
     public static void main(String[] args) {

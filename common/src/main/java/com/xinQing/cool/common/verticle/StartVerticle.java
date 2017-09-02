@@ -2,8 +2,8 @@ package com.xinQing.cool.common.verticle;
 
 import com.xinQing.cool.common.conf.Register;
 import com.xinQing.cool.common.discovery.Discovery;
-import com.xinQing.cool.common.discovery.RedisServiceDiscoveryOptions;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 import org.slf4j.Logger;
@@ -31,16 +31,23 @@ public class StartVerticle extends AbstractVerticle {
     @Autowired
     private Discovery discovery;
 
-    @Autowired
-    private RedisServiceDiscoveryOptions redisServiceDiscoveryOptions;
+    /***
+     * 子类做一些初始化操作
+     *
+     * @param vertx Vertx
+     */
+    protected void init(Vertx vertx) {
+    }
 
     @Override
     public void start() throws Exception {
         HttpServer server = vertx.createHttpServer();
         Router router = register.router(vertx);
         // 服务发现，redis
-        discovery.create(vertx, redisServiceDiscoveryOptions.create())
+        discovery.create(vertx)
                 .publish();
+        // 初始化
+        init(vertx);
         server.requestHandler(router::accept).listen(port);
         log.info("start server on port:{}", port);
     }

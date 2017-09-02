@@ -5,7 +5,7 @@ server:
 # 服务发现
 discovery:
   # 服务名
-  name: gateway
+  name: blog
   # 服务地址
   root: /
 

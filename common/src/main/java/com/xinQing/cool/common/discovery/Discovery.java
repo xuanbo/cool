@@ -12,10 +12,10 @@ import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.servicediscovery.Record;
 import io.vertx.servicediscovery.ServiceDiscovery;
-import io.vertx.servicediscovery.ServiceDiscoveryOptions;
 import io.vertx.servicediscovery.types.HttpEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +30,9 @@ public class Discovery {
     private static final Logger log = LoggerFactory.getLogger(Discovery.class);
 
     private ServiceDiscovery serviceDiscovery;
+
+    @Autowired
+    private RedisServiceDiscoveryOptions redisServiceDiscoveryOptions;
 
     // the service name
     @Value("${discovery.name}")
@@ -47,9 +50,13 @@ public class Discovery {
     @Value("${discovery.root:/}")
     private String root;
 
-    public Discovery create(Vertx vertx, ServiceDiscoveryOptions options) {
-        serviceDiscovery = ServiceDiscovery.create(vertx, options);
+    public Discovery create(Vertx vertx) {
+        serviceDiscovery = ServiceDiscovery.create(vertx, redisServiceDiscoveryOptions.create());
         return this;
+    }
+
+    public ServiceDiscovery getServiceDiscovery() {
+        return serviceDiscovery;
     }
 
     public void publish() {

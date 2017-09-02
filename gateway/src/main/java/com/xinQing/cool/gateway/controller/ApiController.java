@@ -1,7 +1,7 @@
 package com.xinQing.cool.gateway.controller;
 
 import com.xinQing.cool.common.conf.Controller;
-import com.xinQing.cool.common.discovery.Discovery;
+import com.xinQing.cool.common.discovery.Breaker;
 import com.xinQing.cool.common.util.Accept;
 import com.xinQing.cool.common.util.Response;
 import io.vertx.core.buffer.Buffer;
@@ -24,7 +24,7 @@ public class ApiController implements Controller {
     private static final Logger log = LoggerFactory.getLogger(ApiController.class);
 
     @Autowired
-    private Discovery discovery;
+    private Breaker breaker;
 
     @Override
     public void register(final Router router) {
@@ -42,7 +42,7 @@ public class ApiController implements Controller {
         // 服务uri
         String uri = request.uri().replaceFirst("/api/" + name, "");
         log.info("name[{}],uri[{}]", name, uri);
-        discovery.doGet(name, uri, ar -> Response.sendJson(rc, ar.result()));
+        breaker.doGet(name, uri, ar -> Response.sendJson(rc, ar.result()));
     }
 
     private void doPost(RoutingContext rc) {
@@ -53,7 +53,7 @@ public class ApiController implements Controller {
         String uri = request.uri().replaceFirst("/api/" + name, "");
         Buffer data = rc.getBody();
         log.info("name[{}],uri[{}],data[{}]", name, uri, data);
-        discovery.doPost(name, uri, data, ar -> Response.sendJson(rc, ar.result()));
+        breaker.doPost(name, uri, data, ar -> Response.sendJson(rc, ar.result()));
     }
 
     private void doPut(RoutingContext rc) {
@@ -64,7 +64,7 @@ public class ApiController implements Controller {
         String uri = request.uri().replaceFirst("/api/" + name, "");
         Buffer data = rc.getBody();
         log.info("name[{}],uri[{}],data[{}]", name, uri, data);
-        discovery.doPut(name, uri, data, ar -> Response.sendJson(rc, ar.result()));
+        breaker.doPut(name, uri, data, ar -> Response.sendJson(rc, ar.result()));
     }
 
     private void doDelete(RoutingContext rc) {
@@ -75,7 +75,7 @@ public class ApiController implements Controller {
         String uri = request.uri().replaceFirst("/api/" + name, "");
         Buffer data = rc.getBody();
         log.info("name[{}],uri[{}],data[{}]", name, uri, data);
-        discovery.doDelete(name, uri, data, ar -> Response.sendJson(rc, ar.result()));
+        breaker.doDelete(name, uri, data, ar -> Response.sendJson(rc, ar.result()));
     }
 
 }

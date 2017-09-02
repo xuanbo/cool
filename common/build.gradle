@@ -4,4 +4,5 @@ dependencies {
     compile "io.vertx:vertx-web-client:$vertxVersion"
     compile "io.vertx:vertx-service-discovery:$vertxVersion"
     compile "io.vertx:vertx-service-discovery-backend-redis:$vertxVersion"
+    compile "io.vertx:vertx-circuit-breaker:$vertxVersion"
 }

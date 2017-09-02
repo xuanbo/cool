@@ -14,3 +14,17 @@ discovery:
     host: 127.0.0.1
     # record储存的key
     key: discovery.records
+
+# 断路器
+breaker:
+  # 名字
+  name: breaker-gateway
+  # Sets the maximum number of failures before opening the circuit
+  maxFailures: 5
+  # 超时
+  timeout: 5000
+  # 设置是否失败回调
+  fallbackOnFailure: true
+  # Sets the time in ms before it attempts to re-close the circuit (by going to the hal-open state). If the cricuit
+  # is closed when the timeout is reached, nothing happens
+  resetTimeout: 10000
