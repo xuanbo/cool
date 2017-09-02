@@ -1,0 +1,7 @@
+dependencies {
+    compile "org.springframework.boot:spring-boot:$springBootVersion"
+    compile "io.vertx:vertx-web:$vertxVersion"
+    compile "io.vertx:vertx-web-client:$vertxVersion"
+    compile "io.vertx:vertx-service-discovery:$vertxVersion"
+    compile "io.vertx:vertx-service-discovery-backend-redis:$vertxVersion"
+}

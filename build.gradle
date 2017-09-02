@@ -1,0 +1,29 @@
+group 'com.cool'
+version '1.0-SNAPSHOT'
+
+subprojects {
+    apply plugin: 'java'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    [compileJava,compileTestJava,javadoc]*.options*.encoding = 'UTF-8'
+
+    repositories {
+        mavenLocal()
+        maven {
+            url "http://maven.aliyun.com/nexus/content/groups/public"
+        }
+        jcenter()
+    }
+
+    ext {
+        springBootVersion = '1.5.2.RELEASE'
+        vertxVersion = '3.4.2'
+        slf4jVersion = '1.7.24'
+    }
+
+    dependencies {
+        compile "org.slf4j:slf4j-api:$slf4jVersion"
+    }
+}

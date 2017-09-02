@@ -1,0 +1,12 @@
+### ignore gradle ###
+.gradle
+build
+
+### ignore idea ###
+.idea
+*.iml
+
+### ignore vertx ###
+.vertx
+
+

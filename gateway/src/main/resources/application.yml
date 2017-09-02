@@ -1,0 +1,16 @@
+server:
+  host: 127.0.0.1
+  port: 8080
+
+# 服务发现
+discovery:
+  # 服务名
+  name: gateway
+  # 服务地址
+  root: /
+
+  # 基于redis
+  redis:
+    host: 127.0.0.1
+    # record储存的key
+    key: discovery.records

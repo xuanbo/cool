@@ -1,0 +1,16 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
+    }
+}
+
+apply plugin: 'org.springframework.boot'
+
+dependencies {
+    compile project(':common')
+    compile "org.springframework.boot:spring-boot-starter:$springBootVersion"
+}
