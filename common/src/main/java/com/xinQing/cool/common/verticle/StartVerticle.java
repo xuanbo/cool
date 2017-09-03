@@ -3,6 +3,7 @@ package com.xinQing.cool.common.verticle;
 import com.xinQing.cool.common.conf.Register;
 import com.xinQing.cool.common.discovery.Discovery;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
@@ -53,7 +54,13 @@ public class StartVerticle extends AbstractVerticle {
     }
 
     @Override
-    public void stop() throws Exception {
-        discovery.close();
+    public void stop(Future<Void> stopFuture) throws Exception {
+        discovery.close(ar -> {
+            if (ar.succeeded()) {
+                stopFuture.complete();
+            } else {
+                stopFuture.fail(ar.cause());
+            }
+        });
     }
 }

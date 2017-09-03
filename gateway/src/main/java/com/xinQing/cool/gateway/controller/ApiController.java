@@ -29,10 +29,17 @@ public class ApiController implements Controller {
     @Override
     public void register(final Router router) {
         final String matchUrl = "/api/:discoveryName/*";
-        Accept.json(router.get(matchUrl)).handler(this::doGet);
-        Accept.json(router.post(matchUrl)).handler(this::doPost);
-        Accept.json(router.put(matchUrl)).handler(this::doPut);
-        Accept.json(router.delete(matchUrl)).handler(this::doDelete);
+//        Accept.json(router.get(matchUrl)).handler(this::doGet);
+//        Accept.json(router.post(matchUrl)).handler(this::doPost);
+//        Accept.json(router.put(matchUrl)).handler(this::doPut);
+//        Accept.json(router.delete(matchUrl)).handler(this::doDelete);
+
+        router.route(matchUrl).handler(this::doDispatch);
+    }
+
+    private void doDispatch(RoutingContext rc) {
+        String name = rc.request().getParam("discoveryName");
+        breaker.dispatch(name, rc, ar -> Response.sendJson(rc, ar.result()));
     }
 
     private void doGet(RoutingContext rc) {

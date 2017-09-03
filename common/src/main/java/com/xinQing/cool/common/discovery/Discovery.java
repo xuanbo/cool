@@ -50,6 +50,10 @@ public class Discovery {
     @Value("${discovery.root:/}")
     private String root;
 
+    public Record record() {
+        return HttpEndpoint.createRecord(name, host, port, root);
+    }
+
     public Discovery create(Vertx vertx) {
         serviceDiscovery = ServiceDiscovery.create(vertx, redisServiceDiscoveryOptions.create());
         return this;
@@ -60,13 +64,22 @@ public class Discovery {
     }
 
     public void publish() {
-        Record record = HttpEndpoint.createRecord(name, host, port, root);
-        serviceDiscovery.publish(record, ar -> {
+        serviceDiscovery.publish(record(), ar -> {
             if (ar.succeeded()) {
                 Record result = ar.result();
                 log.info("服务发现发布成功 => {}", result.toJson());
             } else {
                 log.warn("服务发现发布失败 => {}", ar.cause());
+            }
+        });
+    }
+
+    public void unpublish() {
+        serviceDiscovery.unpublish(record().getRegistration(), ar -> {
+            if (ar.succeeded()) {
+                log.info("serviceDiscovery unpublish successful");
+            } else {
+                log.warn("serviceDiscovery unpublish failed => {}", ar.cause());
             }
         });
     }
@@ -181,11 +194,17 @@ public class Discovery {
         serviceDiscovery.close();
     }
 
+    public void close(Handler<AsyncResult<Void>> handler) {
+        unpublish();
+        close();
+        Future.<Void>succeededFuture().setHandler(handler);
+    }
+
     /**
      * 所有服务记录
      */
     public void records() {
-        serviceDiscovery.getRecords(new JsonObject().put("name", "*"), ar -> {
+            serviceDiscovery.getRecords(new JsonObject().put("name", "*"), ar -> {
             if (ar.succeeded()) {
                ar.result().forEach(record -> log.info("{}", record.toJson()));
             }

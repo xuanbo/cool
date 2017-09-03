@@ -9,16 +9,23 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.servicediscovery.Record;
 import io.vertx.servicediscovery.ServiceDiscovery;
+import io.vertx.servicediscovery.ServiceReference;
 import io.vertx.servicediscovery.types.HttpEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * 熔断器
@@ -69,6 +76,56 @@ public class Breaker {
         return circuitBreaker;
     }
 
+    /**
+     * 请求分发
+     *
+     * @param name 服务名
+     * @param rc RoutingContext
+     * @param handler 异步处理结果
+     */
+    public void dispatch(String name, final RoutingContext rc, final Handler<AsyncResult<String>> handler) {
+        final ServiceDiscovery serviceDiscovery = discovery.getServiceDiscovery();
+        circuitBreaker.executeWithFallback(future -> {
+            serviceDiscovery.getRecords(new JsonObject().put("name", name), ar -> {
+                if (ar.succeeded()) {
+                    Optional<Record> any = ar.result().stream().filter(record -> record.getName().equals(name)).findAny();
+                    if (any.isPresent()) {
+                        // 随机找到一个record，并reference
+                        ServiceReference reference = serviceDiscovery.getReference(any.get());
+                        WebClient client = reference.getAs(WebClient.class);
+                        // 原始请求
+                        HttpServerRequest request = rc.request();
+                        // 分发请求
+                        HttpRequest<Buffer> req = client.request(request.method(), request.uri().replaceFirst("/api/" + name, ""));
+                        copyHeader(request, req);
+                        // 发送请求
+                        req.sendBuffer(rc.getBody(), result -> {
+                            if (result.succeeded()) {
+                                future.complete(result.result().bodyAsString());
+                            } else {
+                                log.warn("请求分发异常 => {}", result.cause());
+                                future.fail(result.cause());
+                            }
+                        });
+                        // 释放
+                        reference.release();
+                    } else {
+                        // 找不到服务记录
+                        future.complete(Result.fail(404, "没有该服务").toJson());
+                    }
+                }
+            });
+        }, v -> {
+            // 当熔断器熔断时将调用此处代码
+            return Result.fail(v.getMessage()).toJson();
+        }).setHandler(ar -> Future.succeededFuture(ar.result()).setHandler(handler)); // 处理结果
+    }
+
+    private void copyHeader(HttpServerRequest request, HttpRequest<Buffer> req) {
+        request.headers().forEach(entry -> req.putHeader(entry.getKey(), entry.getValue()));
+    }
+
+    @Deprecated
     public void doGet(final String name, final String uri, final Handler<AsyncResult<String>> handler) {
         final ServiceDiscovery serviceDiscovery = discovery.getServiceDiscovery();
         circuitBreaker.executeWithFallback(future ->
@@ -96,6 +153,7 @@ public class Breaker {
                 }).setHandler(ar -> Future.succeededFuture(ar.result()).setHandler(handler)); // 处理结果
     }
 
+    @Deprecated
     public void doPost(final String name, final String uri, final Buffer data, final Handler<AsyncResult<String>> handler) {
         final ServiceDiscovery serviceDiscovery = discovery.getServiceDiscovery();
         circuitBreaker.executeWithFallback(future ->
@@ -121,6 +179,7 @@ public class Breaker {
      * @param name    服务名称
      * @param handler Handler<AsyncResult<JsonObject>>
      */
+    @Deprecated
     public void doPut(final String name, final String uri, final Buffer data, final Handler<AsyncResult<String>> handler) {
         final ServiceDiscovery serviceDiscovery = discovery.getServiceDiscovery();
         circuitBreaker.executeWithFallback(future ->
@@ -147,6 +206,7 @@ public class Breaker {
      * @param name    服务名称
      * @param handler Handler<AsyncResult<JsonObject>>
      */
+    @Deprecated
     public void doDelete(final String name, final String uri, final Buffer data, final Handler<AsyncResult<String>> handler) {
         final ServiceDiscovery serviceDiscovery = discovery.getServiceDiscovery();
         circuitBreaker.executeWithFallback(future ->

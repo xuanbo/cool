@@ -25,6 +25,7 @@ public class RedisServiceDiscoveryOptions {
                         new JsonObject()
                                 .put("host", host)
                                 .put("key", key)
+                                .put("scan-period", 4000)
                 );
     }
 
